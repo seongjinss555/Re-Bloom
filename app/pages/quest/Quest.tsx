@@ -54,7 +54,6 @@ export default function QuestScreen(){
     );
   }
 
-  // 로딩 끝난 뒤 렌더 (혹은 바로 router.replace 로 다른 화면으로 이동)
   return (
     <LinearGradient colors={['#18c8d1ff', '#e9eaebff']} style={{ flex: 1, width: screenWidth }}>
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -92,7 +91,7 @@ const styles = StyleSheet.create({
     marginTop: 10, 
     fontSize: 16 
 },
-loadingCompleteText: {
+  loadingCompleteText: {
     color: '#fff',
     fontSize: 35,
     fontWeight: 'bold',

@@ -70,9 +70,6 @@ export default function WelcomeScreen() {
         <TouchableOpacity>
           <Text style={styles.buttonText} onPress={goLogin}>시작하기</Text>
         </TouchableOpacity>
-        <TouchableOpacity>
-          <Text style={styles.buttonText} onPress={goRegister}>회원가입</Text>
-        </TouchableOpacity>
       </Animated.View>
     </LinearGradient>
   );

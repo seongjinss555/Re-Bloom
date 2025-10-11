@@ -3,9 +3,11 @@ import NavBar from "@/layout/NavBar";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, Dimensions, Image, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { Animated, Dimensions, StyleSheet } from "react-native";
 import { Calendar } from 'react-native-calendars';
-
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import QuestContainer from "../../constants/QuestContainer";
+import RotatingText from "../../constants/RotatingText";
 const {width : screenWidth} = Dimensions.get('window');
 
 export default function HomeScreen(){
@@ -13,7 +15,7 @@ export default function HomeScreen(){
     const slideAnim = useRef(new Animated.Value(50)).current;
     const router = useRouter();
     const [selectedDate, setSeletedDate] = useState('');
-
+    const insets = useSafeAreaInsets();
 
     const goQuest = () => {
         router.push('/pages/quest/Quest')
@@ -81,26 +83,34 @@ export default function HomeScreen(){
             selectedDotColor: '#ffffff',
         }}     
     />
-    <TouchableOpacity onPress={goQuest} style={styles.QuestContainer}>
-    <LinearGradient
-        colors={['#5EC6F5', '#007AFF']}
-        style={styles.QuestContainer}
+    <QuestContainer
+        onPress={goQuest}
+        style={{
+            width: screenWidth - 80,
+            height: 140,
+            borderRadius: 20,
+            position: 'absolute',
+            bottom: 100,
+    }}
     >
-        <Image
-            source={require('../../assets/images/crown.png')}
-            style={{width: 50, height: 50, marginBottom: 10}}
-        />
-        <Text
-            style={{
-                color: '#fff',
-                fontSize: 18,
-                fontWeight: 'bold',
-                textAlign: 'center',
-                marginBottom: 10,
-            }}
-        >오늘의 퀘스트를 확인해보세요!</Text>
-    </LinearGradient>
-    </TouchableOpacity>
+    <RotatingText
+        texts={['오늘은', '산책하기!', '오늘은', '운동하기!', '오늘은', '명상하기!', '오늘은', '일기쓰기!']}
+        mainClassName="px-3 py-1 rounded-lg bg-transparent"     
+        splitLevelClassName="overflow-hidden pb-1 rt-word"     
+        elementLevelClassName="rt-element"                
+        initial={{ y: '100%', opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: '-120%', opacity: 0 }}
+        staggerFrom="last"
+        staggerDuration={0.03}
+        transition={{ type: 'spring', damping: 26, stiffness: 380 }}
+        auto
+        rotationInterval={2000}
+        animatePresenceMode="wait"          
+        animatePresenceInitial={false}     
+        splitBy="characters"                
+    />
+   </QuestContainer>
     <NavBar />
     </LinearGradient>
     );
@@ -115,16 +125,4 @@ const styles = StyleSheet.create({
         width: screenWidth,
         padding: 20,
     },
-
-    QuestContainer:{
-        flex:1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: screenWidth - 80,
-        height: 115,
-        padding: 20,
-        borderRadius: 20,
-        position: 'absolute',
-        bottom: 100,
-    }
 });

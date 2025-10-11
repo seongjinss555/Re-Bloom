@@ -1,6 +1,5 @@
 import { FontAwesome5 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -62,39 +61,25 @@ export default function LoginScreen() {
 
   // 구글 로그인 처리
   const handleGoogleLogin = async () => {
-    if(isLoading) return;
+  if (isLoading) return;
 
-    setIsLoading(true);
-    setProvider('google');
-    console.log('구글 로그인 시작');
+  setIsLoading(true);
+  setProvider('google');
 
-    try{
-        if(Platform.OS === 'web'){
-            // 웹 환경에서는 직접 리다이렉트
-            await googleLogin();
-        }else{
-            // 모바일 환경에서는 googleLogin 함수 사용
-            const result = await googleLogin();
-            console.log("결과 : ", result);
-
-            // 인증 상태 확인
-            await checkAuthStatus();
-
-            // 인증 상태 변경 후 미들웨어가 적절한 페이지로 자동 리다이렉션
-            router.replace('/pages/Home');
-        }
-    }catch(error){
-        console.error('구글 로그인 오류', error);
-        setIsLoading(false);
-        Alert.alert(
-            "Google Login failed",
-            "Please try again"
-        );
-    }finally{
-        if(Platform.OS !== 'web'){
-            setIsLoading(true);
-        }
+  try {
+    if (Platform.OS === 'web') {
+      void googleLogin();   
+      return;              
     }
+
+    const status = await googleLogin();
+    console.log('googleLogin status:', status);
+  } catch (e) {
+    console.error('구글 로그인 오류', e);
+    Alert.alert('Google Login failed', 'Please try again');
+  } finally {
+    setIsLoading(false);   
+  }
 };
 
   return (
