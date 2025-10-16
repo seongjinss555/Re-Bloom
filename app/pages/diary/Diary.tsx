@@ -1,16 +1,21 @@
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
-import NavBar from "../../../layout/NavBar";
+import NavBar from "../../../components/layout/NavBar";
+import api from "../../config/api";
+
+const BACKEND_BASE = process.env.EXPO_PUBLIC_API_BASE;
 
 type todayMood = 'very_happy' | 'happy' | 'neutral' | 'sad' | 'very_sad';
 
@@ -41,12 +46,25 @@ export default function DiaryScreen(){
   const handleAskAI = async () => {
     if (!submitDiary) return;
 
+    // const moodToServer = (m: todayMood): string => ({
+    //   very_happy: 'VERY_HAPPY',
+    //   happy: 'HAPPY',
+    //   neutral: 'NEUTRAL',
+    //   sad: 'SAD',
+    //   very_sad: 'VERY_SAD',
+    // }[m]);
+
     try {
       // TODO: 필요 시 서버에 저장/요청
-      // await api.post('/api/diary', { date: new Date().toISOString(), mood, content });
+      await api.post(`${BACKEND_BASE}/api/diary/save-and-chat`, { 
+        date: new Date().toISOString().split('T')[0], 
+        mood: selectedMood, 
+        content: diaryText},
+      {headers: { 'Content-Type': 'application/json' }}
+    );
 
       // TODO: AI 상담 라우팅/요청
-      // await api.post('/api/diary/coach', { mood, content });
+      router.push('/pages/Home');
 
       Alert.alert('전송 완료', 'AI 상담을 시작합니다.');
       // router.push('/pages/Coach');  // expo-router 사용 시
@@ -60,6 +78,7 @@ return (
       style={{ flex: 1, backgroundColor: '#F6FAFF' }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <LinearGradient colors={['#599fe1ff', '#FFD3F0']} style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         {/* 상단: 날짜 */}
         <View style={styles.header}>
@@ -121,8 +140,10 @@ return (
 
         <View style={{ height: 24 }} />
       </ScrollView>
+       </LinearGradient>
       <NavBar />
     </KeyboardAvoidingView>
+   
   );
 }
 
@@ -143,7 +164,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#101828',
+    color: '#ffffffff',
   },
   moodWrap: {
     flexDirection: 'row',
@@ -164,14 +185,15 @@ const styles = StyleSheet.create({
   },
   moodItemSelected: {
     borderColor: '#5B8DEF',
-    backgroundColor: '#EEF4FF',
+    backgroundColor: '#d8e1f0ff',
+    borderWidth:2,
   },
   moodEmoji: {
     fontSize: 22,
     textAlign: 'center',
   },
   moodEmojiSelected: {
-    transform: [{ scale: 1.05 }],
+    transform: [{ scale: 1.2 }],
   },
   moodLabel: {
     marginTop: 6,
