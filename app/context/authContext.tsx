@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
@@ -14,7 +15,7 @@ interface AuthContextType {
   getAuthHeader: () => Promise<{ headers: { Authorization?: string } }>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined); 
 
 let globalAuthState: AuthContextType = {
   isAuthenticated: false,
@@ -110,26 +111,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => { checkAuthStatus(); }, []);
 
   const logout = async () => {
-    try {
-      const headers = await getAuthHeader();
-      await api.post('/api/auth/logout', {}, { withCredentials: Platform.OS === 'web', headers: headers.headers });
+  try {
+    const headers = await getAuthHeader();
+    const refreshToken = Platform.OS !== 'web' 
+         ? await SecureStore.getItemAsync('refreshToken')
+         : localStorage.getItem('refreshToken');
 
-      if (Platform.OS !== 'web') {
-        await SecureStore.deleteItemAsync('accessToken');
-        await SecureStore.deleteItemAsync('refreshToken');
-        await SecureStore.deleteItemAsync('userId');
-      } else {
-        localStorage.removeItem('userId');
-      }
 
-      setIsAuthenticated(false);
-      setUserId(null);
-      setUser(null);
-    } catch (e) {
-      console.error('로그아웃 오류:', e);
-      throw e;
+    // refresh 토큰 포함하여 서버에 로그아웃 요청
+    await api.post('/api/auth/logout', {refreshToken}, {
+      withCredentials: Platform.OS === 'web',
+      headers: headers.headers,
+    });
+
+    // 클라이언트 토큰 삭제
+    if (Platform.OS !== 'web') {
+      await SecureStore.deleteItemAsync('accessToken');
+      await SecureStore.deleteItemAsync('refreshToken');
+      await SecureStore.deleteItemAsync('userId');
+
+      const accessAfter = await SecureStore.getItemAsync('accessToken');
+      const refreshAfter = await SecureStore.getItemAsync('refreshToken');
+      const userIdAfter = await SecureStore.getItemAsync('userId');
+      console.log('SecureStore 삭제 확인:', { accessToken: accessAfter, refreshToken: refreshAfter, userId: userIdAfter });
+    } else {
+      // 웹에서 토큰 같이 삭제
+      console.log('웹 삭제 전:', {
+        at: localStorage.getItem('accessToken'),
+        rt: localStorage.getItem('refreshToken'),
+        uid: localStorage.getItem('userId'),
+      });
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('userId');
+
+      console.log('웹 삭제 후:', {
+        at: localStorage.getItem('accessToken'),
+        rt: localStorage.getItem('refreshToken'),
+        uid: localStorage.getItem('userId'),
+      });
     }
-  };
+
+    // 상태 초기화
+    setIsAuthenticated(false);
+    setUserId(null);
+    setUser(null);
+    
+    // 홈으로 이동
+    router.replace('/');
+  } catch (e) {
+    console.error('로그아웃 오류:', e);
+    throw e;
+  }
+};
+
 
   useEffect(() => {
     globalAuthState = { isAuthenticated, userId, loading, user, checkAuthStatus, saveTokensAndSync, logout, getAuthHeader };
