@@ -13,11 +13,12 @@ const { width: screenWidth } = Dimensions.get("window");
 
 type Diary = {
   id: number;
-  diaryDate: string | { year:number; month:number; day:number }; // 서버가 LocalDate면 string(YYYY-MM-DD)로 오게 해두는 게 편함
+  diaryDate: string | { year:number; month:number; day:number }; 
   mood: string;    
   content: string;
   createdAt?: string;
   updatedAt?: string;
+  summary?: string;
 };
 
 const MOOD_EMOJI: Record<string, string> = {
@@ -93,6 +94,44 @@ export default function HomeScreen() {
   }
 };
 
+const fetchDiarySummary = async (id:number) =>{
+    try{
+        const res = await api.post(`/api/diary/chat/${id}/summary`);
+        const s = typeof res.data === 'string' ? res.data : (res.data?.summary ?? '');
+        return s;
+    }catch(e:any){
+        console.log('[요약 불러오기 에러]', e?.response?.data ?? e?.message);
+        return '';
+    }
+};
+
+// 선택한 날짜의 일기들 중 summary가 비어 있으면 채워넣기
+const ensureSummariesForDate = async (dateStr: string) => {
+  const items = byDate[dateStr] ?? [];
+  if (!items.length) return;
+
+  const targets = items.filter(d => !d.summary);
+  if (!targets.length) return;
+
+  // 요약들 요청
+  const results = await Promise.all(
+    targets.map(async (d) => ({
+      id: d.id,
+      summary: await fetchDiarySummary(d.id),
+    }))
+  );
+
+  // 상태 머지
+  setByDate(prev => {
+    const next = { ...prev };
+    next[dateStr] = (next[dateStr] ?? []).map(d => {
+      const found = results.find(r => r.id === d.id && r.summary);
+      return found ? { ...d, summary: found.summary } : d;
+    });
+    return next;
+  });
+};
+
   // 달력 점/선택 표시 
   const markedDates = useMemo(() => {
     const dots: Record<string, any> = {};
@@ -119,6 +158,7 @@ export default function HomeScreen() {
     if (!byDate[dateStr]) {
       await fetchByDate(dateStr);
     }
+    await ensureSummariesForDate(dateStr);
     setModalVisible(true);
   };
 
@@ -178,7 +218,7 @@ export default function HomeScreen() {
 
       <NavBar />
 
-      {/* ---- 모달: 선택한 날짜의 일기 목록 ---- */}
+      {/*  모달: 선택한 날짜의 일기 목록 */}
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -214,6 +254,12 @@ export default function HomeScreen() {
                       {MOOD_EMOJI[d.mood] ?? "📝"}  {d.mood.replace("_", " ")}
                     </Text>
                     <Text style={styles.diaryContent}>{d.content}</Text>
+                    {d.summary? (
+                        <View style={styles.summaryBox}>
+                          <Text style={styles.summaryTitle}>대화 요약</Text>
+                          <Text style={styles.summaryText}>{d.summary}</Text>
+                        </View>
+                    ):null}
                   </View>
                 ))
               )}
@@ -226,8 +272,18 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center", width: screenWidth, padding: 20 },
-  modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.35)", justifyContent: "flex-end" },
+  container: { 
+    flex: 1, 
+    justifyContent: "center", 
+    alignItems: "center", 
+    width: screenWidth, 
+    padding: 20 
+},
+  modalBackdrop: { 
+    flex: 1, 
+    backgroundColor: "rgba(0,0,0,0.35)", 
+    justifyContent: "flex-end" 
+},
   modalCard: {
     backgroundColor: "#fff",
     padding: 16,
@@ -235,9 +291,23 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 16,
     maxHeight: "70%",
   },
-  modalHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 },
-  modalTitle: { fontSize: 18, fontWeight: "700", color: "#0f172a" },
-  closeBtn: { paddingHorizontal: 8, paddingVertical: 6, backgroundColor: "#f3f4f6", borderRadius: 8 },
+  modalHeader: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    justifyContent: "space-between", 
+    marginBottom: 8 
+},
+  modalTitle: { 
+    fontSize: 18, 
+    fontWeight: "700", 
+    color: "#0f172a" 
+},
+  closeBtn: { 
+    paddingHorizontal: 8, 
+    paddingVertical: 6, 
+    backgroundColor: "#f3f4f6", 
+    borderRadius: 8 
+},
   diaryItem: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
@@ -246,6 +316,34 @@ const styles = StyleSheet.create({
     marginTop: 10,
     backgroundColor: "#fff",
   },
-  diaryMood: { fontSize: 13, color: "#334155", marginBottom: 6, fontWeight: "700" },
-  diaryContent: { fontSize: 15, color: "#0b1220", lineHeight: 21 },
+  diaryMood: { 
+    fontSize: 13, 
+    color: "#334155", 
+    marginBottom: 6, 
+    fontWeight: "700" 
+},
+  diaryContent: { 
+    fontSize: 15, 
+    color: "#0b1220", 
+    lineHeight: 21 
+},
+  summaryBox: {
+    marginTop: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#F8FAFF',
+    padding: 10,
+  },
+  summaryTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#334155',
+    marginBottom: 6,
+  },
+  summaryText: {
+    fontSize: 14,
+    color: '#0b1220',
+    lineHeight: 20,
+  },
 });
