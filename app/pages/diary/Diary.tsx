@@ -10,7 +10,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
+  View
 } from 'react-native';
 import NavBar from "../../../components/layout/NavBar";
 import api from "../../config/api";
@@ -30,7 +30,15 @@ export default function DiaryScreen(){
   const [diaryText, setDiaryText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);   
-  const [alreadyToday, setAlreadyToday] = useState(false);                 
+  const [alreadyToday, setAlreadyToday] = useState(false);    
+  const [resetting, setResetting] = useState(false);             
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = (msg:string) =>{
+    setToast(msg);
+    setTimeout(()=>setToast(null),1600);
+  };
 
   const todayDate = useMemo(() => {
     try { return new Intl.DateTimeFormat('ko-KR', { dateStyle: 'full' }).format(new Date()); }
@@ -64,7 +72,7 @@ export default function DiaryScreen(){
   try {
     const today = new Date().toISOString().split('T')[0];
 
-    // 일기 저장 +첫 응답까지 반환
+    // 일기 저장 + 첫 응답까지 반환
     const { data } = await api.post('/api/diary/save-and-chat', {
       date: today,
       mood: selectedMood,
@@ -103,6 +111,37 @@ export default function DiaryScreen(){
     if (status === 400) setAlreadyToday(true);
   } finally {
     setSubmitting(false);
+  }
+};
+
+const handleResetDiary = async () =>{
+  if(resetting) return;
+
+  // 1차 확인 탭
+  if(!confirmDelete){
+    setConfirmDelete(true);
+    setTimeout(()=> setConfirmDelete(false),2500);
+    return;
+  }
+
+  //2차 삭제 탭
+  try{
+    setResetting(true);
+    await api.delete('/api/admin/reset/today');
+
+    //ui 초기화
+    setSelectedMood(null);
+    setDiaryText('');
+    setAlreadyToday(false);
+    setErrorMessage(null);
+    setConfirmDelete(false);
+
+    showToast('오늘의 일기가 삭제되었어요');
+  }catch(e:any){
+    console.log('reset today error', e?.response?.data ?? e?.message);
+    showToast('삭제에 실패했어요');
+  }finally{
+    setResetting(false);
   }
 };
 
@@ -177,8 +216,30 @@ export default function DiaryScreen(){
             )}
           </Pressable>
 
+          {alreadyToday && (
+            <Pressable
+              onPress={handleResetDiary}
+              disabled={resetting}
+              style={[
+                styles.dangerBtn,
+                (resetting) && styles.dangerBtnDisabled,
+                confirmDelete && {backgroundColor: '#DC2626'},
+              ]}
+            >
+              {resetting ? (
+                <ActivityIndicator color="#fff" />
+                ) : (
+                <Text style={styles.dangerText}>{confirmDelete ? '정말 삭제할까요? (다시 탭)' : '오늘의 일기 삭제하기'}</Text>
+                )}
+            </Pressable>
+          )}
           <View style={{ height: 24 }} />
         </ScrollView>
+        {toast && (
+          <View style={styles.toast}>
+            <Text style={styles.toastText}>{toast}</Text>
+          </View>
+        )}
       </LinearGradient>
       <NavBar />
     </KeyboardAvoidingView>
@@ -298,6 +359,38 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 12,
   },
+  dangerBtn: {
+    marginTop: 10,
+    backgroundColor: '#EF4444',   // 빨간 버튼
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#EF4444',
+    shadowOpacity: 0.22,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
+  },
+  dangerBtnDisabled: {
+    backgroundColor: '#FCA5A5',
+  },
+  dangerText:{
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  toast: {
+    position: 'absolute',
+    left: 16, right: 16, bottom: 90,
+    backgroundColor: 'rgba(17,24,39,0.92)',
+    paddingVertical: 10, 
+    paddingHorizontal:14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  toastText: {color: '#fff', fontWeight: '700'},
+
   errorText: {
     color: '#B91C1C',
     fontSize: 13,
