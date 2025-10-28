@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
@@ -10,6 +11,7 @@ import {
     StyleSheet,
     Text,
     TextInput,
+    ToastAndroid,
     View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -50,6 +52,8 @@ export default function EditProfile(){
     const [initialData, setInitialData] = useState<ProfileResponse | null>(null);
     const [hasProfile, setHasProfile] = useState<boolean>(false);
 
+    const [toast, setToast]= useState<string|null>(null);
+
     const changed = useMemo(() =>{
         const baseData: ProfileResponse = initialData ?? {concerns:[], other:'', gender: null};
         const first = new Set(baseData.concerns || []);
@@ -68,6 +72,14 @@ export default function EditProfile(){
         return null;
     };
     
+    const showToast = (msg:string) => {
+        if(Platform.OS === 'android'){
+            ToastAndroid.show(msg, ToastAndroid.SHORT);
+        }else{
+            setToast(msg);
+            setTimeout(()=>setToast(null),1600);
+        }
+    };
     // 프로필 정보 불러오기
     useEffect(() => {
         (async () => {
@@ -114,10 +126,11 @@ export default function EditProfile(){
           await api.put('/api/profile',body);
           setInitialData(body);
           setHasProfile(true);
+          showToast('프로필이 저장되었습니다.');
           return true;
         }catch(e:any){
             console.log('프로필 저장 실패', e?.response?.data ?? e?.message);
-            Alert.alert('프로필 저장에 실패했어요. 다시 시도해주세요.');
+            showToast('프로필 저장에 실패했어요. 다시 시도해주세요');
             return false;
         }finally{
             setSaving(false);
@@ -159,7 +172,7 @@ export default function EditProfile(){
             <View style={[styles.header,{zIndex:2}]}>
                 <View style={styles.headerRow}>
                     <Pressable onPress={goBack} style={styles.backBtn}>
-                        <Text style={styles.backIcon}>⬅</Text>
+                         <Ionicons name="chevron-back" size={20} color="#111827" />
                     </Pressable>
                     <Text style={styles.headerTitle}>프로필 수정</Text>
                     <View style={{width: 32}}/>
@@ -251,7 +264,6 @@ export default function EditProfile(){
                     const ok = await onSave();
                     console.log('result : ',ok);
                     if(ok){
-                        Alert.alert('정보가 정상적으로 수정되었습니다');
                         router.replace('/pages/profile/myPage');
                     }
                  }}
@@ -266,6 +278,11 @@ export default function EditProfile(){
                 </Pressable>
                 </View>
             </>)}
+            {toast && (
+                    <View style={styles.toast}>
+                        <Text style={styles.toastText}>{toast}</Text>
+                    </View>
+            )}
         </KeyboardAvoidingView>
     )
 }
@@ -421,4 +438,14 @@ const styles = StyleSheet.create({
   },
   saveBtnDisabled: { backgroundColor: '#C7D2FE' },
   saveText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
+  toast:{
+    position: 'absolute',
+    left: 16, right: 16, bottom: 90,
+    backgroundColor: 'rgba(17,24,39,0.92)',
+    paddingVertical: 10, 
+    paddingHorizontal:14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  toastText:{color: '#fff', fontWeight: '700'}
 });
