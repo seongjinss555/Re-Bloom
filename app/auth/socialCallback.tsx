@@ -59,7 +59,6 @@ export default function SocialCallback() {
           if (!at) throw new Error('토큰 교환 실패');
 
           await saveTokensAndSync({ accessToken: at, refreshToken: rt, userId: uid });
-          router.replace(takeFirst(params.mode) === 'signup' ? '/auth/Register' : '/pages/Home');
           return;
         }
 
@@ -79,7 +78,7 @@ export default function SocialCallback() {
           }
 
           await checkAuthStatus();
-          router.replace(takeFirst(params.mode) === 'signup' ? '/auth/Register' : '/pages/Home');
+          router.replace('/pages/Home');
           return;
         }
         if (await checkAuthStatus()) {
