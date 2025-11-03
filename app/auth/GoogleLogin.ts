@@ -7,7 +7,7 @@ export const NATIVE_REDIRECT = 'rebloom://socialCallback';
 export async function googleLogin(): Promise<'opened' | 'redirected' | 'cancel'> {
   if (Platform.OS === 'web') {
     const res = await fetch(`${BACKEND_BASE}/api/auth/oauth2/authorization/google?mode=web`, {
-      headers: { Accept: 'application/json', 'ngrok-skip-browser-warning': 'true' },
+      headers: { Accept: 'application/json', 'ngrok-skip-browser-warning': 'false' },
       credentials: 'omit',
     });
     const { url } = await res.json();
@@ -17,7 +17,7 @@ export async function googleLogin(): Promise<'opened' | 'redirected' | 'cancel'>
 
   // mobile
   const r = await fetch(`${BACKEND_BASE}/api/auth/oauth2/authorization/google?mode=mobile`, {
-    headers: { Accept: 'application/json', 'ngrok-skip-browser-warning': 'true' },
+    headers: { Accept: 'application/json', 'ngrok-skip-browser-warning': 'false' },
     credentials: 'omit',
   });
   const { url } = await r.json();

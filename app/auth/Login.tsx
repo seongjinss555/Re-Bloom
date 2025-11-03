@@ -98,7 +98,7 @@ export default function LoginScreen() {
         ]}
       >
         <Text style={styles.title}>환영해요!</Text>
-        <Text style={styles.subtitle}>다시 오셔서 기뻐요</Text>
+        <Text style={styles.subtitle}>오늘도 행복한 하루를 보내셨나요?</Text>
       </Animated.View>
       
       <Animated.View style={[styles.bottomButtons, { opacity: fadeAnim }]}>
