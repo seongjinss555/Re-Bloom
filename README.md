@@ -74,7 +74,7 @@ Re:Bloom은 사용자가 일기를 작성하면 AI가 즉시 내용을 분석하
 | Method | Endpoint | 설명 |
 | :--- | :--- | :--- |
 | `POST` | `/api/diary/save-and-chat` | 일기 저장 + 첫 상담 응답 (상담 시작) |
-| `POST` | `/api/diary/chat/start` | (예비) 대화 시작 |
+| `POST` | `/api/diary/chat/start` | 대화 시작 |
 | `POST` | `/api/diary/chat/{diaryId}` | 대화 이어가기 |
 | `POST` | `/api/diary/chat/{diaryId}/summary` | 상담 및 일기 내용 요약 생성 |
 | `GET` | `/api/diary` | 특정 날짜 일기 조회 |
