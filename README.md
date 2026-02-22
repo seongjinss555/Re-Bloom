@@ -57,6 +57,9 @@ Re:Bloom은 사용자가 일기를 작성하면 AI가 즉시 내용을 분석하
 | 📘 달력 (일기 조회) | 💬 AI 상담 및 작성 |
 | :---: | :---: |
 | 본인이 작성한 일기를<br>캘린더 형태로 한눈에 확인 | 일기 작성 후 즉시 이어지는<br>AI와의 심층 상담 페이지 |
+<img width="200" height="450" alt="image" src="https://github.com/user-attachments/assets/2afc71dd-17b9-434a-9255-fb2f3113d081" />
+<img width="200" height="440" alt="image" src="https://github.com/user-attachments/assets/5efe0fde-f2bd-4677-9571-e89426b7851b" />
+
 
 | 📊 하루 요약 페이지 | 🧍 프로필 수정 |
 | :---: | :---: |
