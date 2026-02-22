@@ -54,17 +54,18 @@ Re:Bloom은 사용자가 일기를 작성하면 AI가 즉시 내용을 분석하
 
 ## 📱 UI / UX Screens
 
-| 📘 달력 (일기 조회) | 💬 AI 상담 및 작성 |
+| 📘 달력 (일기 조회) | 💬 AI 추천 퀘스트 |
 | :---: | :---: |
-| 본인이 작성한 일기를<br>캘린더 형태로 한눈에 확인 | 일기 작성 후 즉시 이어지는<br>AI와의 심층 상담 페이지 |
+| 본인이 작성한 일기를<br>캘린더 형태로 한눈에 확인 | OpenAI API 기반<br>사용자 맞춤 일일 퀘스트 |
 <img width="200" height="450" alt="image" src="https://github.com/user-attachments/assets/2afc71dd-17b9-434a-9255-fb2f3113d081" />
-<img width="200" height="440" alt="image" src="https://github.com/user-attachments/assets/5efe0fde-f2bd-4677-9571-e89426b7851b" />
+<img width="200" height="450" alt="스크린샷 2025-10-18 오후 9 47 47" src="https://github.com/user-attachments/assets/ff8d088f-acc2-461f-bc6a-fc9122415192" />
 
 
 | 📊 하루 요약 페이지 | 🧍 프로필 수정 |
 | :---: | :---: |
 | 하루의 감정을 분석한<br>요약 리포트 제공 | 닉네임, 성별, 감정 상태 태그를<br>수정하는 페이지 |
-
+<img width="200" height="450" alt="KakaoTalk_Photo_2026-02-23-00-44-53" src="https://github.com/user-attachments/assets/64662ca5-109e-4338-bdfb-cd07edcdc3ea" />
+<img width="200" height="700" alt="KakaoTalk_Photo_2026-02-23-00-44-13" src="https://github.com/user-attachments/assets/444bb667-34da-447e-8115-55ef57e7377d" />
 <br/>
 
 ## 📡 API Endpoints
